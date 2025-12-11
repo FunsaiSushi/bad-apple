@@ -11,7 +11,7 @@ This project reproduces the ["Bad Apple!!"](https://youtu.be/9lNZ_Rnr7Jc?si=ROgX
 Run the animation directly with a single command:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/FunsaiSushi/BadAppleBash/main/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/FunsaiSushi/bad-apple/main/install.sh | sh
 ```
 
 This will automatically download and run the animation. The files are temporarily stored and cleaned up after execution.
