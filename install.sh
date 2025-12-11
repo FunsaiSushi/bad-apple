@@ -17,7 +17,8 @@ REPO_NAME="bad-apple"
 
 # Create temporary directory
 TMP_DIR=$(mktemp -d -t bad-apple-XXXXXX)
-trap "rm -rf $TMP_DIR" EXIT
+# Cleanup on exit, interrupt (Ctrl+C), or termination
+trap "rm -rf $TMP_DIR" EXIT INT TERM
 
 printf "${GREEN}🍎 Bad Apple Terminal Animation${NC}\n"
 printf "${YELLOW}Downloading animation files...${NC}\n"
