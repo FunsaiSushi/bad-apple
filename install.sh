@@ -19,20 +19,34 @@ REPO_NAME="bad-apple"
 TMP_DIR=$(mktemp -d -t bad-apple-XXXXXX)
 trap "rm -rf $TMP_DIR" EXIT
 
-echo -e "${GREEN}🍎 Bad Apple Terminal Animation${NC}"
-echo -e "${YELLOW}Downloading animation files...${NC}"
+printf "${GREEN}🍎 Bad Apple Terminal Animation${NC}\n"
+printf "${YELLOW}Downloading animation files...${NC}\n"
 
 # Check if git is available
-if command -v git &> /dev/null; then
-    # Clone the repository
-    git clone --depth 1 "$REPO_URL" "$TMP_DIR/$REPO_NAME" > /dev/null 2>&1
-    cd "$TMP_DIR/$REPO_NAME"
-else
-    echo -e "${RED}Error: git is not installed. Please install git to run this animation.${NC}"
+if ! command -v git &> /dev/null; then
+    printf "${RED}Error: git is not installed. Please install git to run this animation.${NC}\n"
     echo "You can install git with:"
     echo "  macOS: brew install git"
     echo "  Ubuntu/Debian: sudo apt-get install git"
     echo "  Fedora: sudo dnf install git"
+    exit 1
+fi
+
+# Clone the repository with error handling
+if ! git clone --depth 1 "$REPO_URL" "$TMP_DIR/$REPO_NAME" 2>&1; then
+    printf "${RED}Error: Failed to clone repository.${NC}\n"
+    printf "${YELLOW}Please check:${NC}\n"
+    echo "  1. Your internet connection"
+    echo "  2. The repository URL is correct: $REPO_URL"
+    echo "  3. The repository exists and is accessible"
+    exit 1
+fi
+
+cd "$TMP_DIR/$REPO_NAME"
+
+# Check if run.sh exists
+if [[ ! -f "run.sh" ]]; then
+    printf "${RED}Error: run.sh not found in repository.${NC}\n"
     exit 1
 fi
 
@@ -41,11 +55,17 @@ chmod +x run.sh
 
 # Check if frames directory exists
 if [[ ! -d "frames-ascii" ]]; then
-    echo -e "${RED}Error: Frames directory not found. The repository may be incomplete.${NC}"
+    printf "${RED}Error: Frames directory not found. The repository may be incomplete.${NC}\n"
     exit 1
 fi
 
-echo -e "${GREEN}Ready! Starting animation...${NC}"
+# Check if frames directory has files
+if [[ -z "$(ls -A frames-ascii 2>/dev/null)" ]]; then
+    printf "${RED}Error: Frames directory is empty.${NC}\n"
+    exit 1
+fi
+
+printf "${GREEN}Ready! Starting animation...${NC}\n"
 echo ""
 
 # Run the animation
