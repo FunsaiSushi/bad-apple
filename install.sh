@@ -68,14 +68,30 @@ fi
 printf "${GREEN}Ready! Starting animation...${NC}\n"
 echo ""
 
-# Automatically answer the audio prompt based on mpv availability
-# Check if mpv is installed, use it if available, otherwise skip audio
+# Patch run.sh to skip the interactive prompt
+# Determine if we should use audio based on mpv availability
+USE_AUDIO="n"
 if command -v mpv &> /dev/null; then
     printf "${YELLOW}Audio will be played (mpv detected)${NC}\n"
-    echo "y" | ./run.sh
+    USE_AUDIO="y"
 else
     printf "${YELLOW}Running without audio (mpv not installed)${NC}\n"
-    echo "n" | ./run.sh
 fi
+
+# Temporarily modify run.sh to skip the interactive prompt
+# Create a backup and patch the read command to use our choice
+if [[ "$(uname)" == "Darwin" ]]; then
+    # macOS sed requires extension
+    sed -i.bak "s/read -p \"Do you want to use mpv to play sound? You need mpv installed to do that. (y\/n): \" choice/choice=\"$USE_AUDIO\"/" run.sh
+else
+    # Linux sed
+    sed -i "s/read -p \"Do you want to use mpv to play sound? You need mpv installed to do that. (y\/n): \" choice/choice=\"$USE_AUDIO\"/" run.sh
+fi
+
+# Run the patched script
+./run.sh
+
+# Restore the original (though cleanup will remove it anyway since we're in a temp dir)
+mv run.sh.bak run.sh 2>/dev/null || true
 
 # Cleanup is handled by trap

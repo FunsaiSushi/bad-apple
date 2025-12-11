@@ -8,11 +8,23 @@ This project reproduces the ["Bad Apple!!"](https://youtu.be/9lNZ_Rnr7Jc?si=ROgX
 
 ### Quick Start (Curl Installation)
 
+#### macOS / Linux
+
 Run the animation directly with a single command:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/FunsaiSushi/bad-apple/main/install.sh | sh
 ```
+
+#### Windows (PowerShell)
+
+Run the animation directly with PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/FunsaiSushi/bad-apple/main/install.ps1 | iex
+```
+
+**Note:** Windows requires Git Bash (comes with [Git for Windows](https://git-scm.com/download/win)) or WSL to run the animation script. The PowerShell installer will automatically use bash if available.
 
 This will automatically download and run the animation. The files are temporarily stored and cleaned up after execution.
 
