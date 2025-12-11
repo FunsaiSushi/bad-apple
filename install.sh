@@ -68,7 +68,14 @@ fi
 printf "${GREEN}Ready! Starting animation...${NC}\n"
 echo ""
 
-# Run the animation
-./run.sh
+# Automatically answer the audio prompt based on mpv availability
+# Check if mpv is installed, use it if available, otherwise skip audio
+if command -v mpv &> /dev/null; then
+    printf "${YELLOW}Audio will be played (mpv detected)${NC}\n"
+    echo "y" | ./run.sh
+else
+    printf "${YELLOW}Running without audio (mpv not installed)${NC}\n"
+    echo "n" | ./run.sh
+fi
 
 # Cleanup is handled by trap
