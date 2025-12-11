@@ -1,7 +1,7 @@
 #!/bin/bash
 # Bad Apple Terminal Animation - Curl Installer
 # This script downloads and runs the Bad Apple ASCII animation
-# Usage: curl -sSL https://raw.githubusercontent.com/FunsaiSushi/BadAppleBash/main/install.sh | sh
+# Usage: curl -sSL https://raw.githubusercontent.com/FunsaiSushi/bad-apple/main/install.sh | sh
 
 set -e
 
@@ -12,8 +12,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # GitHub repository URL
-REPO_URL="https://github.com/FunsaiSushi/BadAppleBash.git"
-REPO_NAME="BadAppleBash"
+REPO_URL="https://github.com/FunsaiSushi/bad-apple.git"
+REPO_NAME="bad-apple"
 
 # Create temporary directory
 TMP_DIR=$(mktemp -d -t bad-apple-XXXXXX)
