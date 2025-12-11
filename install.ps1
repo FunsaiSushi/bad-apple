@@ -70,13 +70,74 @@ try {
     Write-ColorOutput Green "Ready! Starting animation..."
     Write-Output ""
     
-    # Determine if we should use audio based on mpv availability
+    # Function to detect Windows package manager and provide mpv installation command
+    function Get-MpvInstallCommand {
+        if (Get-Command winget -ErrorAction SilentlyContinue) {
+            return "winget install mpv"
+        } elseif (Get-Command choco -ErrorAction SilentlyContinue) {
+            return "choco install mpv -y"
+        } elseif (Get-Command scoop -ErrorAction SilentlyContinue) {
+            return "scoop install mpv"
+        } else {
+            return $null
+        }
+    }
+    
+    # Function to install mpv
+    function Install-Mpv {
+        $installCmd = Get-MpvInstallCommand
+        if ($installCmd) {
+            Write-ColorOutput Yellow "Installing mpv..."
+            Invoke-Expression $installCmd
+            if ($LASTEXITCODE -eq 0 -or $?) {
+                Write-ColorOutput Green "mpv installed successfully!"
+                return $true
+            } else {
+                Write-ColorOutput Red "Failed to install mpv. Please install it manually."
+                return $false
+            }
+        } else {
+            Write-ColorOutput Yellow "No package manager found (winget, chocolatey, or scoop)."
+            Write-Output "Please install mpv manually from: https://mpv.io/installation/"
+            return $false
+        }
+    }
+    
+    # Check mpv availability and handle installation
     $USE_AUDIO = "n"
     if (Get-Command mpv -ErrorAction SilentlyContinue) {
         Write-ColorOutput Yellow "Audio will be played (mpv detected)"
         $USE_AUDIO = "y"
     } else {
-        Write-ColorOutput Yellow "Running without audio (mpv not installed)"
+        Write-ColorOutput Yellow "mpv is not installed. Audio playback will be disabled."
+        
+        # Try to prompt the user (Read-Host works even when piped)
+        # Read-Host reads from the console directly, not from stdin
+        try {
+            Write-Output ""
+            $installChoice = Read-Host "Would you like to install mpv for audio playback? (y/n)"
+            if ($installChoice -match "^[Yy]$") {
+                if (Install-Mpv) {
+                    $USE_AUDIO = "y"
+                    Write-ColorOutput Green "Audio will be played!"
+                } else {
+                    Write-ColorOutput Yellow "Continuing without audio..."
+                }
+            } else {
+                Write-ColorOutput Yellow "Continuing without audio..."
+            }
+        } catch {
+            # No console available (non-interactive environment)
+            Write-Output ""
+            Write-ColorOutput Yellow "To enable audio, install mpv:"
+            $installCmd = Get-MpvInstallCommand
+            if ($installCmd) {
+                Write-Output "  $installCmd"
+            } else {
+                Write-Output "  Download from: https://mpv.io/installation/"
+            }
+            Write-ColorOutput Yellow "Running without audio..."
+        }
     }
     
     # For Windows, we need to use bash to run run.sh

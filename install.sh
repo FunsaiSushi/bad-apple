@@ -68,14 +68,92 @@ fi
 printf "${GREEN}Ready! Starting animation...${NC}\n"
 echo ""
 
-# Patch run.sh to skip the interactive prompt
-# Determine if we should use audio based on mpv availability
+# Function to detect OS and provide mpv installation command
+detect_mpv_install_command() {
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # macOS
+        if command -v brew &> /dev/null; then
+            echo "brew install mpv"
+            return 0
+        else
+            printf "${YELLOW}Homebrew not found. Install Homebrew first: https://brew.sh${NC}\n"
+            return 1
+        fi
+    elif [[ -f /etc/debian_version ]]; then
+        # Debian/Ubuntu
+        echo "sudo apt-get update && sudo apt-get install -y mpv"
+        return 0
+    elif [[ -f /etc/redhat-release ]]; then
+        # RedHat/Fedora/CentOS
+        if command -v dnf &> /dev/null; then
+            echo "sudo dnf install -y mpv"
+        else
+            echo "sudo yum install -y mpv"
+        fi
+        return 0
+    elif [[ -f /etc/arch-release ]]; then
+        # Arch Linux
+        echo "sudo pacman -S --noconfirm mpv"
+        return 0
+    else
+        printf "${YELLOW}Unknown OS. Please install mpv manually.${NC}\n"
+        return 1
+    fi
+}
+
+# Function to install mpv
+install_mpv() {
+    local install_cmd=$(detect_mpv_install_command)
+    if [[ $? -eq 0 ]]; then
+        printf "${YELLOW}Installing mpv...${NC}\n"
+        eval "$install_cmd"
+        if [[ $? -eq 0 ]]; then
+            printf "${GREEN}mpv installed successfully!${NC}\n"
+            return 0
+        else
+            printf "${RED}Failed to install mpv. Please install it manually.${NC}\n"
+            return 1
+        fi
+    else
+        return 1
+    fi
+}
+
+# Check mpv availability and handle installation
 USE_AUDIO="n"
 if command -v mpv &> /dev/null; then
     printf "${YELLOW}Audio will be played (mpv detected)${NC}\n"
     USE_AUDIO="y"
 else
-    printf "${YELLOW}Running without audio (mpv not installed)${NC}\n"
+    printf "${YELLOW}mpv is not installed. Audio playback will be disabled.${NC}\n"
+    
+    # Try to prompt the user (works even when piped via curl | sh)
+    # Check if we can read from /dev/tty (the actual terminal)
+    if [[ -c /dev/tty ]] 2>/dev/null; then
+        # Interactive mode - ask the user
+        # Read from /dev/tty to work even when stdin is piped
+        echo ""
+        read -p "Would you like to install mpv for audio playback? (y/n): " install_choice < /dev/tty
+        if [[ "$install_choice" =~ ^[Yy]$ ]]; then
+            if install_mpv; then
+                USE_AUDIO="y"
+                printf "${GREEN}Audio will be played!${NC}\n"
+            else
+                printf "${YELLOW}Continuing without audio...${NC}\n"
+            fi
+        else
+            printf "${YELLOW}Continuing without audio...${NC}\n"
+        fi
+    else
+        # No terminal available (non-interactive environment)
+        echo ""
+        printf "${YELLOW}To enable audio, install mpv:${NC}\n"
+        local install_cmd=$(detect_mpv_install_command)
+        if [[ $? -eq 0 ]]; then
+            echo "  $install_cmd"
+        fi
+        printf "${YELLOW}Running without audio...${NC}\n"
+    fi
 fi
 
 # Temporarily modify run.sh to skip the interactive prompt
