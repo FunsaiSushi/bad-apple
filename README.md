@@ -21,13 +21,13 @@ This will automatically download and run the animation. The files are temporaril
 1.  Clone the repository to your local environment:
 
 ```bash
-git clone https://github.com/FunsaiSushi/BadAppleBash.git
+git clone https://github.com/FunsaiSushi/bad-apple.git
 ```
 
 2.  Navigate to the project directory:
 
 ```bash
-cd BadAppleBash
+cd bad-apple
 ```
 
 3.  Make the `run.sh` script executable:
