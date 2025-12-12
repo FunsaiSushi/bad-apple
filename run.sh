@@ -60,19 +60,19 @@ if [[ ! -d "$FRAMES_DIR" ]]; then
     exit 1
 fi
 
-# Clear screen
-printf "\033c"
+# Clear screen - try multiple methods for Windows compatibility
+clear 2>/dev/null || printf "\033[2J\033[H"
 
 # Play animation
 for filename in $(ls -v "$FRAMES_DIR"); do
-    # Move cursor to top-left
-    tput cup 0 0
-    
     # Construct full file path
     file="${FRAMES_DIR}/$filename"
     
     # Validate file existence
     if [[ -f "$file" ]]; then
+        # Move cursor to top-left - use ANSI escape code directly for better Windows compatibility
+        printf "\033[H"
+        
         # Display frame
         cat "$file"
     fi
