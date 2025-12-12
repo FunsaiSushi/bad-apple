@@ -63,12 +63,13 @@ fi
 # Clear screen - try multiple methods for Windows compatibility
 clear 2>/dev/null || printf "\033[2J\033[H"
 
-# Play animation
-for filename in $(ls -v "$FRAMES_DIR"); do
-    # Construct full file path
+# Pre-load frame filenames to avoid repeated ls calls (performance optimization)
+frames=($(ls -v "$FRAMES_DIR" 2>/dev/null))
+
+# Play animation with optimized display
+for filename in "${frames[@]}"; do
     file="${FRAMES_DIR}/$filename"
     
-    # Validate file existence
     if [[ -f "$file" ]]; then
         # Move cursor to top-left - use ANSI escape code directly for better Windows compatibility
         printf "\033[H"
@@ -77,9 +78,13 @@ for filename in $(ls -v "$FRAMES_DIR"); do
         cat "$file"
     fi
     
-    # Wait for next frame
-    sleep 0.024
-
+    # Adjust sleep time based on OS for smoother playback
+    # Windows terminals (Git Bash) tend to render slower, so use slightly faster timing
+    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]] || [[ -n "$MSYSTEM" ]]; then
+        sleep 0.020  # Slightly faster for Windows terminals
+    else
+        sleep 0.024  # Original timing for Unix/macOS
+    fi
 done
 
 # Exit with success
