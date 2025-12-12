@@ -36,9 +36,14 @@ try {
     # Clone the repository
     Write-Output "Cloning repository..."
     $REPO_PATH = Join-Path $TMP_DIR $REPO_NAME
-    git clone --depth 1 $REPO_URL $REPO_PATH 2>&1 | Out-Null
     
-    if (-not $?) {
+    # Clone with proper error handling
+    # Suppress all output (stdout, stderr) and check exit code
+    $ErrorActionPreference = "Continue"
+    git clone --depth 1 $REPO_URL $REPO_PATH *>$null
+    
+    # Check if git clone succeeded
+    if ($LASTEXITCODE -ne 0) {
         Write-ColorOutput Red "Error: Failed to clone repository."
         Write-ColorOutput Yellow "Please check:"
         Write-Output "  1. Your internet connection"
