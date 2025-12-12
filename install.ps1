@@ -147,18 +147,49 @@ try {
     
     # For Windows, we need to use bash to run run.sh
     # Check if bash is available (Git Bash or WSL)
-    if (Get-Command bash -ErrorAction SilentlyContinue) {
+    $bashPath = $null
+    
+    # First, try to find bash in PATH
+    $bashCmd = Get-Command bash -ErrorAction SilentlyContinue
+    if ($bashCmd) {
+        $bashPath = $bashCmd.Source
+    }
+    
+    # If not found, check common Git Bash locations
+    if (-not $bashPath) {
+        $commonPaths = @(
+            "${env:ProgramFiles}\Git\bin\bash.exe",
+            "${env:ProgramFiles(x86)}\Git\bin\bash.exe",
+            "${env:ProgramFiles}\Git\usr\bin\bash.exe"
+        )
+        
+        foreach ($path in $commonPaths) {
+            if (Test-Path $path) {
+                $bashPath = $path
+                break
+            }
+        }
+    }
+    
+    if ($bashPath) {
         # Patch run.sh to skip the interactive prompt
         $runShContent = Get-Content "run.sh" -Raw
         $runShContent = $runShContent -replace 'read -p "Do you want to use mpv to play sound\? You need mpv installed to do that\. \(y/n\): " choice', "choice=`"$USE_AUDIO`""
         Set-Content "run.sh" -Value $runShContent -NoNewline
         
         # Run the script using bash
-        bash run.sh
+        & $bashPath run.sh
     } else {
         Write-ColorOutput Red "Error: bash is not available."
-        Write-Output "Please install Git for Windows (includes Git Bash) from: https://git-scm.com/download/win"
-        Write-Output "Or use WSL (Windows Subsystem for Linux)"
+        Write-Output ""
+        Write-Output "Since git is working, Git for Windows is likely installed, but bash is not in your PATH."
+        Write-Output ""
+        Write-Output "Options:"
+        Write-Output "  1. Restart PowerShell after installing Git for Windows"
+        Write-Output "  2. Add Git Bash to PATH manually"
+        Write-Output "  3. Install WSL (Windows Subsystem for Linux)"
+        Write-Output "  4. Use Git Bash directly: Open 'Git Bash' and run:"
+        Write-Output "     curl -sSL https://raw.githubusercontent.com/FunsaiSushi/bad-apple/main/install.sh | sh"
         exit 1
     }
 } finally {
